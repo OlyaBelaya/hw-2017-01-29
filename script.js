@@ -3,24 +3,19 @@
 
 var arrayOfDate = [];
 
-$("#celsius").
-		//css({
-		//	background: "orange"
-		//}).
-		addClass("onClass");
-
+$("#celsius").addClass("onClass");
 
 let iconsObj = {
-	"clear-day"  : "http://ярославль.name/images/pogoda.jpg",
-	"clear-night": "http://ярославль.name/images/pogoda.jpg",
-	"rain"       : "http://ярославль.name/images/pogoda.jpg",
-	"snow"       : "http://ярославль.name/images/pogoda.jpg",
-	"sleet"      : "http://ярославль.name/images/pogoda.jpg",
-	"wind"       : "http://ярославль.name/images/pogoda.jpg",
-	"fog"        : "http://ярославль.name/images/pogoda.jpg",
-	"cloudy"     : "http://ярославль.name/images/pogoda.jpg",
-	"partly-cloudy-day"  : "http://ярославль.name/images/pogoda.jpg",
-	"partly-cloudy-night": "http://ярославль.name/images/pogoda.jpg"
+	"clear-day"  : "http://s1.iconbird.com/ico/0612/VistaStyleWeatherIconsSet/w128h1281339359674Sunny2.png",
+	"clear-night": "http://s1.iconbird.com/ico/0612/VistaStyleWeatherIconsSet/w128h1281339359624MoonPhaseFull2.png",
+	"rain"       : "http://s1.iconbird.com/ico/0612/VistaStyleWeatherIconsSet/w128h1281339359634NightRain2.png",
+	"snow"       : "http://s1.iconbird.com/ico/0612/VistaStyleWeatherIconsSet/w128h1281339359663SnowOccasional2.png",
+	"sleet"      : "http://s1.iconbird.com/ico/0612/VistaStyleWeatherIconsSet/w128h1281339359657Sleet2.png",
+	"wind"       : "http://s1.iconbird.com/ico/2013/8/426/w64h64137758353297AirSock.png",
+	"fog"        : "http://s1.iconbird.com/ico/0912/FreeweatherconditionsIcons/w128h128134703144019.png",
+	"cloudy"     : "http://s1.iconbird.com/ico/0912/FreeweatherconditionsIcons/w128h128134703144026.png",
+	"partly-cloudy-day"  : "http://s1.iconbird.com/ico/0912/FreeweatherconditionsIcons/w128h128134703144028.png",
+	"partly-cloudy-night": "http://s1.iconbird.com/ico/0912/FreeweatherconditionsIcons/w128h128134703144027.png"
 };//hail,thunderstorm, tornado
 
 
@@ -35,21 +30,17 @@ function onAllow(data) {
 	baseUrl = "https://api.darksky.net/forecast",
 	api = "4df63960782f68b042151e368ffffdd5";
 
-//let script = document.createElement("script");
-//script.src = `${baseUrl}/${api}/${latitude}, ${longitude}`;
-
-
 $.ajax({
-	//url: "https://api.darksky.net/forecast/4df63960782f68b042151e368ffffdd5/37.8267,-122.4233"
 	url: `${baseUrl}/${api}/${latitude}, ${longitude}`,
 	dataType: "jsonp",
 	success(data){
 	
-		arrayOfDate = data.daily.data.slice(0,4);
-			console.log(arrayOfDate);
+		arrayOfDate = data.daily.data.slice(1,4);
+		let curDate = data.currently;
+		arrayOfDate.unshift(curDate);
+		console.log(arrayOfDate);
 		initButton(arrayOfDate);
 	},
-	
 });
 
 }
@@ -63,12 +54,11 @@ function onError() {
 
 function formatDate(timestamp, short){
 	let date = new Date(timestamp*1000);
-	//console.log(date);
 	if (short) {	return `${String(date.getDate()).length > 1 ? 
 			date.getDate() : "0" + date.getDate()}.${String((date.getMonth()+1)).length > 1 ? 
 				(date.getMonth()+1) : "0" + (date.getMonth()+1)}`;
 			}
-			else{return date};
+			else{ return date };
 }
 
 function findImage(img){
@@ -104,8 +94,8 @@ function initButton(arr){
 	let far = 0;
 		arr.forEach((el) => {
 			i++;
-			console.log(el);
-			far = (el.temperatureMax + el.temperatureMax)/2;
+			//console.log(el);
+			far = (i > 1 ?  (el.temperatureMax + el.temperatureMax)/2 : el.temperature);
 	
 $("#overview-container").
 append(`
@@ -125,8 +115,9 @@ drawingView(arr[0]);
 }
 
 function drawingView(item){
-	let far = (item.temperatureMax + item.temperatureMax)/2;
-	let time =formatDate(item.time, false); 
+	let time = formatDate(item.time, false); 
+	let curDate = new Date();
+    let far = (time.getDate() != curDate.getDate() ?  (item.temperatureMax + item.temperatureMax)/2 : item.temperature);
 	$("#current-container").remove();
 	$("body").append(`<div id="current-container">
 		<strong> ${String(time.getDate()).length > 1 ? 
@@ -136,18 +127,15 @@ function drawingView(item){
 	<strong>${days[time.getDay()]}</strong>
 	<br>
 	<p class="temperature" value="${far}">${Math.round(far)} </p>
-	<img src="http://ярославль.name/images/pogoda.jpg">
+	<img src="${findImage(item.icon)}">
 	</div>`);
 	if ($("#celsius").hasClass("onClass")) {
 		convertMeasure("celsius");	
     	};
-	
-
 }
 
 
 $("body").on('click', '#button1', function(){
-	//console.log(arrayOfDate[0]);
    $("#button2").removeClass("currently"); 
    $("#button3").removeClass("currently"); 
    $("#button4").removeClass("currently");
@@ -192,7 +180,6 @@ $("#celsius").click(function(ev){
 });
 
 $("#fahrenheit").click(function(ev){
-
 	ev.preventDefault();
     if ($("#fahrenheit").hasClass("onClass")) {return;}
        else{	$("#fahrenheit").addClass("onClass");	
